@@ -5,12 +5,10 @@ import math
 
 
 class UserCF:
-    def __init__(self, path):
-        self.file_path = path
-        self._init_data()
-
-    def _init_data(self):
-        self.data = pd.read_csv(self.file_path)
+    def __init__(self, data):
+        self.data = data
+        # self.file_path = path
+        # self._init_data()
 
     def _cosine_sim(self, target_movies, movies):
         """
@@ -81,7 +79,7 @@ class UserCF:
         interest_list = sorted(interest_list, key=lambda x: x[1], reverse=True)
         return interest_list[:item_n]
 
-    def calculate(self, target_user_id=1, user_n=10, item_n=200):
+    def calculate(self, target_user_id=1, user_n=20, item_n=10):
         """
         用userCF来做推荐
         :param target_user_id:
@@ -100,5 +98,7 @@ class UserCF:
 
 
 if __name__ == "__main__":
-    user_cf = UserCF(path='../data/ml-latest-small/ratings.csv')
-    user_cf.calculate()
+    file_path = '../data/ml-latest-small/ratings.csv'
+    data = pd.read_csv(file_path)
+    user_cf = UserCF(data=data)
+    print(user_cf.calculate())
