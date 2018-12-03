@@ -18,7 +18,8 @@ class UserCF:
         :return:
         """
         union_len = len(set(target_movies) & set(movies))
-        if union_len == 0: return 0.0
+        if union_len == 0:
+            return 0.0
         product = len(target_movies) * len(movies)
         return union_len / math.sqrt(product)
 
@@ -31,7 +32,7 @@ class UserCF:
         """
         target_movies = self.data[self.data['userId'] == target_user_id][
             'movieId']
-        other_users_id = set(self.data['userId']) - set([target_user_id])
+        other_users_id = set(self.data['userId'].unique()) - set([target_user_id])
         # 二维矩阵，每一维包含当前用户看过的电影id
         other_movies = [self.data[self.data['userId'] == i]['movieId'] for i in
                         other_users_id]
@@ -49,7 +50,7 @@ class UserCF:
         """
         target_user_movies = set(
             self.data[self.data['userId'] == target_user_id]['movieId'])
-        candidates_movies = set(self.data['movieId']) - target_user_movies
+        candidates_movies = set(self.data['movieId'].unique()) - target_user_movies
         return candidates_movies
 
     def _get_top_m_items(self, top_n_users, candidates_movies, item_n):

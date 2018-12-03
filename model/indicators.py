@@ -26,7 +26,17 @@ class Indicators():
                                                  random_state=seed)
         self.user_cf = UserCF(self.train)
 
-    def get_recommend(self, user):
+    def _set_top(self, user_n, item_n):
+        """
+        设置topn值，找出user_n个最相似的用户，推荐item_n个电影
+        :param user_n:
+        :param item_n:
+        :return:
+        """
+        self.user_n = user_n
+        self.item_n = item_n
+
+    def _get_recommend(self, user):
         """
         针对用户user拿到推荐item
         :param user:
@@ -45,7 +55,7 @@ class Indicators():
         all_recom = 0
         print('计算精确率：')
         for user in tqdm(user_list):
-            recom_data = self.get_recommend(user)
+            recom_data = self._get_recommend(user)
             recom_item = set([data[0] for data in recom_data])
             user_item = set(
                 self.test[self.test['userId'] == user]['movieId'].values)
@@ -65,7 +75,7 @@ class Indicators():
         like_item = 0
         print('\n计算召回率：')
         for user in tqdm(user_list):
-            recom_data = self.get_recommend(user)
+            recom_data = self._get_recommend(user)
             recom_item = set([data[0] for data in recom_data])
             user_item = set(
                 self.test[self.test['userId'] == user]['movieId'].values)
@@ -85,7 +95,7 @@ class Indicators():
         all_item = set(self.train['movieId'].values)
         print('\n计算覆盖率：')
         for user in tqdm(user_list):
-            recom_data = self.get_recommend(user)
+            recom_data = self._get_recommend(user)
             recom_item = set([data[0] for data in recom_data])
             all_recom_set.update(recom_item)
         print('\n覆盖率为：', len(all_recom_set) / (len(all_item) * 1.0))
@@ -102,7 +112,7 @@ class Indicators():
         n = 0
         print('\n计算新颖度：')
         for user in tqdm(user_list):
-            recom_data = self.get_recommend(user)
+            recom_data = self._get_recommend(user)
             for rec in set([data[0] for data in recom_data]):
                 ret += math.log(1 + item_popular.get(rec))
                 n += 1
@@ -117,7 +127,7 @@ class Indicators():
         :return:
         """
         self._split_data(seed=seed)
-        test_user_list = list(set(self.test['userId']))
+        test_user_list = list(set(self.test['userId'].unique()))
         user_list = [test_user_list[random.randint(0, len(test_user_list)) - 1]
                      for i in range(20)]
         # self.precision(user_list)
@@ -128,25 +138,25 @@ class Indicators():
     def calculate_total(self, calcu_user_n=20, seed=1):
         """
         计算所有指标
-        :param calcu_user_n:
+        :param calcu_user_n: 计算用户个数
         :param seed:
         :return:
         """
         self._split_data(seed=seed)
-        test_user_list = list(set(self.test['userId']))
+        test_user_list = list(set(self.test['userId'].unique()))
         user_list = [test_user_list[random.randint(0, len(test_user_list)) - 1]
                      for i in range(calcu_user_n)]
         hit = 0  # 击中长度
         all_recom = 0  # 所有用户推荐个数和，用于计算精确率
         like_item = 0  # 用户在测试集中喜欢的项目长度，用于计算召回率
         all_recom_set = set()
-        all_item = set(self.train['movieId'].values)
+        all_item = set(self.train['movieId'].unique())
         item_popular = Counter(self.train['movieId'].values)
         ret = 0
         n = 0
         print('\n计算所有测评指标中...')
         for user in tqdm(user_list):
-            recom_data = self.get_recommend(user)
+            recom_data = self._get_recommend(user)
             recom_item = set([data[0] for data in recom_data])
             user_item = set(
                 self.test[self.test['userId'] == user]['movieId'].values)
