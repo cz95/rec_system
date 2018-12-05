@@ -10,18 +10,25 @@ class UserCF:
         # self.file_path = path
         # self._init_data()
 
-    def _cosine_sim(self, target_movies, movies):
+    def _cosine_sim(self, target_movies, other_movies):
         """
         计算余弦相似性
         :param target_movies:
-        :param movies:
+        :param other_movies:
         :return:
         """
-        union_len = len(set(target_movies) & set(movies))
-        if union_len == 0:
+        target_dict = target_movies.set_index("movieId").to_dict()['rating']
+        movies_dict = other_movies.set_index("movieId").to_dict()['rating']
+        union_movies = set(target_dict.keys()) & set(movies_dict.keys())
+        if len(union_movies) == 0:
             return 0.0
-        product = len(target_movies) * len(movies)
-        return union_len / math.sqrt(product)
+        score_1 = 0
+        for movie in union_movies:
+            score_1 += (target_dict[movie] * movies_dict[movie])
+        rating_1 = sum(target_movies['rating'].values ** 2)
+        rating_2 = sum(other_movies['rating'].values ** 2)
+        score_2 = math.sqrt(rating_1 * rating_2)
+        return score_1 / score_2
 
     def _get_top_n_users(self, target_user_id, user_n):
         """
@@ -31,11 +38,13 @@ class UserCF:
         :return:
         """
         target_movies = self.data[self.data['userId'] == target_user_id][
-            'movieId']
-        other_users_id = set(self.data['userId'].unique()) - set([target_user_id])
+            ['movieId', 'rating']]
+        other_users_id = set(self.data['userId'].unique()) - set(
+            [target_user_id])
         # 二维矩阵，每一维包含当前用户看过的电影id
-        other_movies = [self.data[self.data['userId'] == i]['movieId'] for i in
-                        other_users_id]
+        other_movies = [
+            self.data[self.data['userId'] == i][['movieId', 'rating']] for i in
+            other_users_id]
         sim_list = [self._cosine_sim(target_movies, movies) for movies in
                     other_movies]
         sim_list = sorted(zip(other_users_id, sim_list), key=lambda x: x[1],
@@ -50,7 +59,8 @@ class UserCF:
         """
         target_user_movies = set(
             self.data[self.data['userId'] == target_user_id]['movieId'])
-        candidates_movies = set(self.data['movieId'].unique()) - target_user_movies
+        candidates_movies = set(
+            self.data['movieId'].unique()) - target_user_movies
         return candidates_movies
 
     def _get_top_m_items(self, top_n_users, candidates_movies, item_n):
@@ -83,9 +93,9 @@ class UserCF:
     def calculate(self, target_user_id=1, user_n=20, item_n=10):
         """
         用userCF来做推荐
-        :param target_user_id:
-        :param user_n:
-        :param item_n:
+        :param target_user_id: 对目标用户进行推荐
+        :param user_n: 找到最相似的20个用户
+        :param item_n: 推荐Top item_n个
         :return:
         """
         # 最相似的top N用户
