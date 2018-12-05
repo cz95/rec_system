@@ -170,5 +170,4 @@ if __name__ == "__main__":
     file_path = '../data/ml-latest-small/ratings.csv'
     data = pd.read_csv(file_path)
     user_cf = ItemCF(data=data)
-    print(user_cf.calculate_a())
-    print(user_cf.calculate_a())
+    print(user_cf.calculate_b())
