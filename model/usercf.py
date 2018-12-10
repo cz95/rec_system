@@ -2,17 +2,31 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import math
+from time import time
 
 
-class UserCF:
-    def __init__(self, data):
-        self.data = data
-        # self.file_path = path
-        # self._init_data()
+class Similar:
 
-    def _cosine_sim(self, target_movies, other_movies):
+    @classmethod
+    def _cosine_sim(cls, target_movies, other_movies):
         """
-        计算余弦相似性
+        计算余弦相似性， 看过为1 没看过为0
+        :param target_movies:
+        :param other_movies:
+        :return:
+        """
+        target_set = set(target_movies['movieId'].unique())
+        other_set = set(other_movies['movieId'].unique())
+        union_len = len(target_set & other_set)
+        if union_len == 0:
+            return 0.0
+        product = len(target_set) * len(other_set)
+        return union_len / math.sqrt(product)
+
+    @classmethod
+    def _cosine_sim_score(cls, target_movies, other_movies):
+        """
+        计算余弦相似性 基于评分
         :param target_movies:
         :param other_movies:
         :return:
@@ -30,9 +44,40 @@ class UserCF:
         score_2 = math.sqrt(rating_1 * rating_2)
         return score_1 / score_2
 
+    @classmethod
+    def _iif_sim_(cls):
+        """
+        John S. Breese等人在1998年的工作中给出，两个用于对冷门物品采取过同样的行为更能说明他们兴趣的相似度
+        e.g: 两人都买了《新华字典》，不能说明兴趣相似，但如果两人都买了《数据挖掘导论》，则认为兴趣相似
+        :return:
+        """
+
+        pass
+
+    @classmethod
+    def get_sim(cls, target_movies, other_movies, sim_type=1):
+        """
+        提供相似性函数求
+        :param target_movies: 当前用户列表
+        :param other_movies: 其他用户列表
+        :param sim_type: 相似函数类型
+        :return:
+        """
+        if sim_type == 1:
+            return cls._cosine_sim(target_movies, other_movies)
+        else:
+            return cls._cosine_sim_score(target_movies, other_movies)
+
+
+class UserCF:
+    def __init__(self, data):
+        self.data = data
+        # self.file_path = path
+        # self._init_data()
+
     def _get_top_n_users(self, target_user_id, user_n):
         """
-        计算目标用户与其他用户的相似性
+        计算目标用户与其他用户的相似性 基于评分
         :param target_user_id:
         :param user_n:
         :return:
@@ -45,8 +90,8 @@ class UserCF:
         other_movies = [
             self.data[self.data['userId'] == i][['movieId', 'rating']] for i in
             other_users_id]
-        sim_list = [self._cosine_sim(target_movies, movies) for movies in
-                    other_movies]
+        sim_list = [Similar.get_sim(target_movies, movies, self.type) for movies
+                    in other_movies]
         sim_list = sorted(zip(other_users_id, sim_list), key=lambda x: x[1],
                           reverse=True)
         return sim_list[:user_n]
@@ -76,12 +121,13 @@ class UserCF:
         interest_list = []
         for movie_id in candidates_movies:
             temp = []
-            i = 0
             for user_data in top_n_user_data:
-                i += 1
                 if movie_id in user_data['movieId'].values:
-                    temp.append(user_data[user_data['movieId'] == movie_id][
-                                    'rating'].values[0] / 5)
+                    if self.type == 1:
+                        temp.append(1)
+                    else:
+                        temp.append(user_data[user_data['movieId'] == movie_id][
+                                        'rating'].values[0] / 5)
                 else:
                     temp.append(0)
             interest = sum(
@@ -90,14 +136,17 @@ class UserCF:
         interest_list = sorted(interest_list, key=lambda x: x[1], reverse=True)
         return interest_list[:item_n]
 
-    def calculate(self, target_user_id=1, user_n=20, item_n=10):
+    def calculate(self, target_user_id=1, user_n=20, item_n=10, type=2):
         """
         用userCF来做推荐
         :param target_user_id: 对目标用户进行推荐
         :param user_n: 找到最相似的20个用户
         :param item_n: 推荐Top item_n个
+        :param type: 设置计算类型 1：只区别电影看过和没看过，忽视评分 2：电影看过的有评分
         :return:
         """
+        # 设置类型
+        self.type = type
         # 最相似的top N用户
         top_n_users = self._get_top_n_users(target_user_id, user_n)
         # 推荐系统的候选movies
@@ -109,7 +158,12 @@ class UserCF:
 
 
 if __name__ == "__main__":
+    start = time()
     file_path = '../data/ml-latest-small/ratings.csv'
     data = pd.read_csv(file_path)
     user_cf = UserCF(data=data)
-    print(user_cf.calculate())
+    # type = 1 只区别电影看过和没看过，忽视评分
+    # type = 2 电影看过的有评分
+    # type = 3
+    print(user_cf.calculate(type=2))
+    print('total time is:', time() - start)

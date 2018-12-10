@@ -42,8 +42,8 @@ class Indicators():
         :param user:
         :return:
         """
-        return self.user_cf.calculate(user, user_n=self.user_n,
-                                      item_n=self.item_n)
+        return self.user_cf.calculate(target_user_id=user, user_n=self.user_n,
+                                      item_n=self.item_n, type=2)
 
     def precision(self, user_list):
         """
@@ -145,7 +145,7 @@ class Indicators():
         :return:
         """
         self._split_data(seed=seed)
-        self._set_top(user_n = user_n, item_n=item_n)
+        self._set_top(user_n=user_n, item_n=item_n)
         test_user_list = list(set(self.test['userId'].unique()))
         user_list = [test_user_list[random.randint(0, len(test_user_list)) - 1]
                      for i in range(calcu_user_n)]
@@ -159,7 +159,7 @@ class Indicators():
         n = 0
         print('\n计算所有测评指标中...')
         for user in tqdm(user_list):
-            recom_data = self._get_recommend(user,)
+            recom_data = self._get_recommend(user, )
             recom_item = set([data[0] for data in recom_data])
             user_item = set(
                 self.test[self.test['userId'] == user]['movieId'].values)

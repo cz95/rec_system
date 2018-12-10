@@ -10,8 +10,12 @@ class Graph:
     graph_path = './prank/prank.graph'
 
     @classmethod
-    def pre_process(cls, file_path):
-        cls.data = pd.read_csv(file_path)
+    def pre_process(cls, data):
+        if not os.path.exists('./prank/'):
+            os.mkdir('./prank/')
+        if os.path.exists(cls.graph_path):
+            return
+        cls.data = data
         cls._gen_graph()
         cls.save()
 
@@ -66,10 +70,8 @@ class PersonalRank:
         self._init_model()
 
     def _init_model(self):
-        if not os.path.exists('./prank/'):
-            os.mkdir('./prank/')
-        if not os.path.exists('./prank/prank.graph'):
-            Graph.pre_process(self.path)
+        self.data = pd.read_csv(self.path)
+        Graph.pre_process(self.data)
         self.graph = Graph.load()
         self.params = {k: 0 for k in self.graph.keys()}
 
@@ -92,9 +94,9 @@ class PersonalRank:
         if not os.path.exists('./prank/prank_{}.model'.format(user_id)):
             self.train(user_id)
         self.load(user_id)
-        data = pd.read_csv(self.path)
         item_ids = ['item_{}'.format(item_id) for item_id in
-                    data[data['userId'] == user_id]['movieId'].unique()]
+                    self.data[self.data['userId'] == user_id][
+                        'movieId'].unique()]
         candi_items = [(key, value) for key, value in self.params if
                        key not in item_ids and 'user' not in key]
         return candi_items[:top_n]

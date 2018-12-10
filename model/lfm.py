@@ -14,13 +14,17 @@ class Corpus:
     item_dict_path = './lfm/lfm_items.dict'
 
     @classmethod
-    def pre_process(cls, file_path):
+    def pre_process(cls, data):
         """
         预处理一下，获得每个用户的正负样本并存储
-        :param file_path:
+        :param data:
         :return:
         """
-        cls.data = pd.read_csv(file_path)
+        if not os.path.exists('./lfm/'):
+            os.mkdir('./lfm/')
+        if os.path.exists(cls.item_dict_path):
+            return
+        cls.data = data
         cls.user_list = cls.data['userId'].unique()
         cls.item_list = cls.data['movieId'].unique()
         cls.item_count = Counter(cls.data['movieId'])
@@ -70,18 +74,15 @@ class Corpus:
 class LFM:
     def __init__(self, path):
         self.file_path = path
-        self.feature_n = 100
+        self.feature_n = 50
         self.iter_count = 20
         self.lr = 0.02
         self.lamda = 0.01
         self._init_model()
 
     def _init_model(self):
-        if not os.path.exists('./lfm/lfm_items.dict'):
-            os.mkdir('./lfm/')
-            Corpus.pre_process(file_path)
-
         self.data = pd.read_csv(self.file_path)
+        Corpus.pre_process(self.data)
         self.user_list = self.data['userId'].unique()
         self.item_list = self.data['movieId'].unique()
         self.item_dict = Corpus.load()
