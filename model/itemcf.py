@@ -9,7 +9,7 @@ from time import time
 from tqdm import tqdm
 
 
-class Similar:
+class Similar(object):
     @classmethod
     def _cosine_sim(cls, target_user, other_user):
         """
@@ -62,14 +62,14 @@ class Similar:
             return cls._cosine_sim_score(target_user, other_user)
 
 
-class Matrix:
-    itemcf_path = './itemcf/itemcf.matrix'
-    itemcf_score_path = './itemcf/itemcf_score.matrix'
+class Matrix(object):
+    itemcf_path = './data/itemcf/itemcf.matrix'
+    itemcf_score_path = './data/itemcf/itemcf_score.matrix'
 
     @classmethod
     def pre_process(cls, data, type):
-        if not os.path.exists('./itemcf/'):
-            os.mkdir('./itemcf/')
+        if not os.path.exists('./data/itemcf/'):
+            os.makedirs('./data/itemcf/')
         if type == 1:
             if not os.path.exists(cls.itemcf_path):
                 cls._item_similarity(data)
@@ -267,7 +267,7 @@ class ItemCF:
         :param user_id:
         :param item_n:
         :param top_n:
-        :param type: type=1表示不考虑评分 type=2表示考虑评分
+        :param sim_type: type=1表示不考虑评分 type=2表示考虑评分
         :return:
         """
         Matrix.pre_process(self.data, sim_type)  # 如果只用矩阵计算，最好放到__init__中
@@ -278,7 +278,7 @@ class ItemCF:
 
 if __name__ == "__main__":
     start = time()
-    file_path = '../data/ml-latest-small/ratings.csv'
+    file_path = './data/ml-latest-small/ratings.csv'
     data = pd.read_csv(file_path)
     user_cf = ItemCF(data=data)
     print(user_cf.calculate_b())

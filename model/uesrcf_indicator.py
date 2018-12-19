@@ -179,5 +179,5 @@ class Indicators():
 
 
 if __name__ == '__main__':
-    indic = Indicators(path='../data/ml-latest-small/ratings.csv')
+    indic = Indicators(path='./data/ml-latest-small/ratings.csv')
     indic.calculate_total(40)

@@ -5,8 +5,7 @@ import math
 from time import time
 
 
-class Similar:
-
+class Similar(object):
     @classmethod
     def _cosine_sim(cls, target_movies, other_movies):
         """
@@ -69,7 +68,7 @@ class Similar:
             return cls._cosine_sim_score(target_movies, other_movies)
 
 
-class UserCF:
+class UserCF(object):
     def __init__(self, data):
         self.data = data
         # self.file_path = path
@@ -123,11 +122,8 @@ class UserCF:
             temp = []
             for user_data in top_n_user_data:
                 if movie_id in user_data['movieId'].values:
-                    if self.type == 1:
-                        temp.append(1)
-                    else:
-                        temp.append(user_data[user_data['movieId'] == movie_id][
-                                        'rating'].values[0] / 5)
+                    temp.append(user_data[user_data['movieId'] == movie_id][
+                                    'rating'].values[0] / 5)
                 else:
                     temp.append(0)
             interest = sum(
@@ -159,11 +155,11 @@ class UserCF:
 
 if __name__ == "__main__":
     start = time()
-    file_path = '../data/ml-latest-small/ratings.csv'
+    file_path = './data/ml-latest-small/ratings.csv'
     data = pd.read_csv(file_path)
     user_cf = UserCF(data=data)
     # type = 1 只区别电影看过和没看过，忽视评分
     # type = 2 电影看过的有评分
     # type = 3
-    print(user_cf.calculate(type=2))
+    print(user_cf.calculate(type=1))
     print('total time is:', time() - start)

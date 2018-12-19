@@ -10,8 +10,8 @@ from time import time
 from collections import Counter
 
 
-class Corpus:
-    item_dict_path = './lfm/lfm_items.dict'
+class Corpus(object):
+    item_dict_path = './data/lfm/lfm_items.dict'
 
     @classmethod
     def pre_process(cls, data):
@@ -20,8 +20,8 @@ class Corpus:
         :param data:
         :return:
         """
-        if not os.path.exists('./lfm/'):
-            os.mkdir('./lfm/')
+        if not os.path.exists('./data/lfm/'):
+            os.makedirs('./data/lfm/')
         if os.path.exists(cls.item_dict_path):
             return
         cls.data = data
@@ -71,7 +71,9 @@ class Corpus:
         return item_dict
 
 
-class LFM:
+class LFM(object):
+    lfm_dir = './data/lfm/lfm.model'
+
     def __init__(self, path):
         self.file_path = path
         self.feature_n = 50
@@ -86,8 +88,7 @@ class LFM:
         self.user_list = self.data['userId'].unique()
         self.item_list = self.data['movieId'].unique()
         self.item_dict = Corpus.load()
-
-        if not os.path.exists('./lfm/lfm.model'):
+        if not os.path.exists(self.lfm_dir):
             array_p = np.random.randn(len(self.user_list), self.feature_n)
             array_q = np.random.randn(len(self.item_list), self.feature_n)
             self.p = pd.DataFrame(array_p, columns=range(0, self.feature_n),
@@ -164,18 +165,20 @@ class LFM:
         return candi[:top_n]
 
     def save(self):
-        f = open('./lfm/lfm.model', 'wb')
+        if not os.path.exists('./data/lfm/'):
+            os.makedirs('./data/lfm/')
+        f = open(self.lfm_dir, 'wb')
         pickle.dump((self.p, self.q), f)
         f.close()
 
     def load(self):
-        f = open('./lfm/lfm.model', 'rb')
+        f = open(self.lfm_dir, 'rb')
         self.p, self.q = pickle.load(f)
         f.close()
 
 
 if __name__ == '__main__':
-    file_path = '../data/ml-latest-small/ratings.csv'
+    file_path = './data/ml-latest-small/ratings.csv'
     start = time()
     movies = LFM(file_path).predict(user_id=1)
     print(movies)

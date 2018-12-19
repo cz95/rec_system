@@ -6,13 +6,13 @@ import pandas as pd
 from tqdm import tqdm
 
 
-class Graph:
-    graph_path = './prank/prank.graph'
+class Graph(object):
+    graph_path = './data/prank/prank.graph'
 
     @classmethod
     def pre_process(cls, data):
-        if not os.path.exists('./prank/'):
-            os.mkdir('./prank/')
+        if not os.path.exists('./data/prank/'):
+            os.mkdir('./data/prank/')
         if os.path.exists(cls.graph_path):
             return
         cls.data = data
@@ -62,7 +62,7 @@ class Graph:
         return graph
 
 
-class PersonalRank:
+class PersonalRank(object):
     def __init__(self, file_path):
         self.path = file_path
         self.alpha = 0.6
@@ -91,7 +91,7 @@ class PersonalRank:
         self.save(user_id)
 
     def predict(self, user_id, top_n=10):
-        if not os.path.exists('./prank/prank_{}.model'.format(user_id)):
+        if not os.path.exists('./data/prank/prank_{}.model'.format(user_id)):
             self.train(user_id)
         self.load(user_id)
         item_ids = ['item_{}'.format(item_id) for item_id in
@@ -102,17 +102,17 @@ class PersonalRank:
         return candi_items[:top_n]
 
     def save(self, user_id):
-        f = open('./prank/prank_{}.model'.format(user_id), 'wb')
+        f = open('./data/prank/prank_{}.model'.format(user_id), 'wb')
         pickle.dump(self.params, f)
         f.close()
 
     def load(self, user_id):
-        f = open('./prank/prank_{}.model'.format(user_id), 'rb')
+        f = open('./data/prank/prank_{}.model'.format(user_id), 'rb')
         self.params = pickle.load(f)
         f.close()
 
 
 if __name__ == '__main__':
-    file_path = '../data/ml-latest-small/ratings.csv'
+    file_path = './data/ml-latest-small/ratings.csv'
     prank = PersonalRank(file_path)
     print(prank.predict(1))
