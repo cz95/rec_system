@@ -14,8 +14,7 @@ class TextRank(object):
     """
 
     # 分割句子
-    sentence_delimiters = ['.', '?', '!', ';', '？', '！', '。', '；', '……', '…',
-                           '\n']
+    sentence_delimiters = ['?', '!', '；', '？', '！', '。', '；', '……', '…', '\n']
 
     # 允许的词性
     allow_speech_tags = ['an', 'i', 'j', 'l', 'n', 'nr', 'nrfg', 'ns', 'nt',
@@ -80,8 +79,7 @@ class TextRank(object):
             for r in res:
                 yield r
 
-    def get_text_rank(self, text, window=2, topk=10,
-                      pagerank_config={'alpha': 0.85}):
+    def get_text_rank(self, text, window=2, topk=10):
         """
         实现textrank算法，并返回关键词
         :param text: 文章
@@ -114,7 +112,7 @@ class TextRank(object):
 
         sorted_words = []
         nx_graph = nx.from_numpy_matrix(graph)
-        scores = nx.pagerank(nx_graph, **pagerank_config)
+        scores = nx.pagerank(nx_graph)
         sorted_scores = sorted(scores.items(), key=itemgetter(1), reverse=True)
         for index, score in sorted_scores:
             item = {}

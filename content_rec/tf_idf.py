@@ -52,10 +52,8 @@ class IDF(object):
         保存idf模型
         :return:
         """
-        f = open(cls.idf_dir, 'wb')
-        pickle.dump(cls.idf, f)
-        f.close()
-        pass
+        with open(cls.idf_dir, 'wb') as f:
+            pickle.dump(cls.idf, f)
 
     @classmethod
     def load(cls, corpus_dir):
