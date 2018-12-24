@@ -19,16 +19,16 @@ from sklearn.manifold import TSNE
 class SkipGram(nn.Module):
     embedding_dir = './data/embedding.dict'
 
-    def __init__(self, emb_size, emb_dim):
+    def __init__(self, word_size, emb_dim):
         """
-        :param emb_size: 有多少个词
+        :param word_size: 有多少个词
         :param emb_dim: 每个词用多少维来表示，一般来说：50～500
         """
         super(SkipGram, self).__init__()
-        self.emb_size = emb_size
+        self.word_size = word_size
         self.emb_dim = emb_dim
-        self.u_embed = nn.Embedding(emb_size, emb_dim, sparse=True)
-        self.v_embed = nn.Embedding(emb_size, emb_dim, sparse=True)
+        self.u_embed = nn.Embedding(word_size, emb_dim, sparse=True)
+        self.v_embed = nn.Embedding(word_size, emb_dim, sparse=True)
         self._init_emb()
 
     def _init_emb(self):
@@ -105,12 +105,12 @@ class Word2Vec(object):
         """
         self.train_data = self._subsampling(data, min_count)
         self.emb_dim = emb_dim
-        self.emb_size = len(int_to_vocab)
+        self.word_size = len(int_to_vocab)
         self.batch_size = batch_size
         self.window_size = window_size
         self.epochs = epochs
         self.lr = lr
-        self.skip_gram = SkipGram(self.emb_size, self.emb_dim)
+        self.skip_gram = SkipGram(self.word_size, self.emb_dim)
         self.optimizer = optim.SGD(self.skip_gram.parameters(), lr=self.lr)
 
     def _subsampling(self, data, min_count):
@@ -205,5 +205,5 @@ if __name__ == "__main__":
     corpus_dir = './data/corpus_xueqiu.txt'  # 语料库，每一行表示一篇文章
     corpus_dir = './data/idf_test.txt'  # 语料库，每一行表示一篇文章
     text = open(corpus_dir, 'rb').read().decode('utf-8')
-    wv = Word2Vec(text, epochs=10)
+    wv = Word2Vec(text, epochs=1)
     wv.train()
