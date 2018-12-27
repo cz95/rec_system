@@ -1,28 +1,26 @@
 # Recommend System
-推荐系统，内含主流模型，不定期更新模型
+Recommend System contain mainstream models and are updated rregularly.
 
-## 1. 基于内容推荐（content_rec）
-主要实现基于内容推荐的推荐系统所需的基本算法
-### 1.1 用户画像
-基于用户行为提取结构化数据，并进行标签选择
-#### 1.1.1 结构化数据
-1. 关键词提取——TF-IDF（tf_idf.py）
-2. 关键词提取——TextRank（textrank.py）
-3. 内容分类——FastText(fasttext.py)
-4. 实体识别
-5. 聚类（主题模型）——LDA
-6. 词嵌入——Word2Vec(word2vec.py)
-#### 1.1.2 标签选择
-对标签进行筛选
-1. 卡方检验
-2. 信息熵
+## 1 Content-based recommendation（content_rec）
+This chapter mainly implements the basic algorithms required by content-based recommendation system.
+
+These algorithms can extract structured data based on user behavior and then select labels
+### 1.1 Structured data
+1. Keyword extraction —— TF-IDF（√）/TextRank（√）
+2. Content classification —— FastText（√）
+3. Entity recognition —— BiLSTM
+4. Topic model —— LDA
+5. Word Embedding —— Word2Vec(√)
+### 1.2 Select labels
+Filter labels extracted from structured data
+1. Chi-square
+2. Comentropy
 
 
-## 2 基于近邻推荐（neighbor_rec）
-主要实现一些近邻推荐的算法
-### 2.1 基于用户的协同过滤
-基于利用余弦相似性，分为考虑评分和不考虑评分。
+## 2 Neighbor-based recommendation（neighbor_rec）
+This chapter mainly implements the basic algorithms required by neighbor-based recommendation system.
+### 2.1 User-based collaborative filtering
 
-### 2.2 基于物品的协同过滤
+### 2.2 Item-based collaborative filtering
 
-### 2.3 基于模型的协同过滤
+### 2.3 Model-based collaborative filtering

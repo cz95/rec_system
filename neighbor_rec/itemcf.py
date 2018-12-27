@@ -174,31 +174,6 @@ class ItemCF:
                           reverse=True)
         return sim_list[:item_n]
 
-    def _get_top_n_items(self, user_id, item_n, top_n, sim_type):
-        """
-        方法1中：给用户推荐TopN项目
-        :param user_id:
-        :return:
-        """
-        candi_items = dict()
-        user_data = self.data[self.data['userId'] == user_id][
-            ['movieId', 'rating']]
-        watched_item = user_data.set_index("movieId").to_dict()['rating']
-        watched_item_list = user_data['movieId'].unique()
-        for item_id in tqdm(watched_item_list):
-            top_n_items = self._get_n_items(item_id, item_n, sim_type)
-            for item in top_n_items:
-                if item[0] not in candi_items.keys():
-                    candi_items[item[0]] = 0
-                candi_items[item[0]] += watched_item[item_id] * item[1]
-        # 去掉看过的
-        for item in watched_item_list:
-            if item in candi_items.keys():
-                candi_items.pop(item)
-        recom_items = sorted(candi_items.items(), key=lambda x: x[1],
-                             reverse=True)
-        return recom_items[:top_n]
-
     def get_item_n(self, item_id, sim_matrix, item_n):
         """
         方法2中：基于相似矩阵计算与item_id最相似的top n项
@@ -248,20 +223,7 @@ class ItemCF:
                              reverse=True)
         return recom_items[:top_n]
 
-    def calculate_a(self, user_id=1, item_n=20, top_n=10, sim_type=1):
-        """
-        用方法1计算，用时很长= =
-        :param user_id:
-        :param item_n:
-        :param top_n:
-        :param sim_type:
-        :return:
-        """
-        # 最相似的top N个items
-        top_n_item = self._get_top_n_items(user_id, item_n, top_n, sim_type)
-        return top_n_item
-
-    def calculate_b(self, user_id=1, item_n=20, top_n=10, sim_type=1):
+    def calculate(self, user_id=1, item_n=20, top_n=10, sim_type=1):
         """
         用方法2计算，用时很短
         :param user_id:
@@ -281,5 +243,5 @@ if __name__ == "__main__":
     file_path = './data/ml-latest-small/ratings.csv'
     data = pd.read_csv(file_path)
     user_cf = ItemCF(data=data)
-    print(user_cf.calculate_b())
+    print(user_cf.calculate())
     print('total time is:', time() - start)
