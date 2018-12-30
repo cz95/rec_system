@@ -13,7 +13,7 @@ class Similar(object):
     @classmethod
     def _cosine_sim(cls, target_user, other_user):
         """
-        用于计算余弦相似性，不考虑评分
+        Calculate cosine similarity, regardless of scores
         :param target_user:
         :param other_user:
         :return:
@@ -29,9 +29,9 @@ class Similar(object):
     @classmethod
     def _cosine_sim_score(cls, target_user, other_user):
         """
-        用于计算余弦相似性 考虑得分
-        :param target_user: 看过目标item的用户人群及评分
-        :param other_user: 其他item的用户人群及评分
+        Calculate cosine similarity, consider scores
+        :param target_user:
+        :param other_user:
         :return:
         """
         target_dict = target_user.set_index("userId").to_dict()['rating']
@@ -50,10 +50,12 @@ class Similar(object):
     @classmethod
     def get_sim(cls, target_user, other_user, sim_type=1):
         """
-        提供相似性函数求  type=1不考虑评分，type=2考虑评分
-        :param target_user: 当前用户列表
-        :param other_user: 其他用户列表
-        :param sim_type: 相似函数类型
+        Provide similarity function
+        type=1: without considering the score
+        type=2: consider the score
+        :param target_user: Target item user group with rating
+        :param other_user: Other item user group with rating
+        :param sim_type: Similar function type
         :return:
         """
         if sim_type == 1:
@@ -80,7 +82,8 @@ class Matrix(object):
     @classmethod
     def _item_similarity(cls, data):
         """
-        方法2中：用于计算物品间相似矩阵，不考虑评分，只考虑是否看过
+        Calculate the similarity matrix between items,
+        regardless of the score, only consider whether to watch
         :return sim_matrix:
         """
         item = dict()
@@ -110,7 +113,7 @@ class Matrix(object):
     @classmethod
     def _item_similarity_scroe(cls, data):
         """
-        方法2中：用于计算物品间相似矩阵，考虑评分
+        Calculate the similarity matrix between items, consider the score
         :param data:
         :return sim_matrix:
         """
@@ -154,29 +157,9 @@ class ItemCF:
     def __init__(self, data):
         self.data = data
 
-    def _get_n_items(self, item_id, item_n, sim_type):
-        """
-        方法1中：用于计算与item_id最相似的top n项
-        :param item_id:
-        :param item_n:
-        :return:
-        """
-        cur_user = self.data[self.data['movieId'] == item_id][
-            ['userId', 'rating']]
-        other_item = set(self.data['movieId'].unique()) - set([item_id])
-        # 二维矩阵，每一维包含当前看过此电影id的用户
-        other_users = [
-            self.data[self.data['movieId'] == i][['userId', 'rating']] for i in
-            other_item]
-        sim_list = [Similar.get_sim(cur_user, user, sim_type) for user in
-                    other_users]
-        sim_list = sorted(zip(other_item, sim_list), key=lambda x: x[1],
-                          reverse=True)
-        return sim_list[:item_n]
-
     def get_item_n(self, item_id, sim_matrix, item_n):
         """
-        方法2中：基于相似矩阵计算与item_id最相似的top n项
+        Calculate the top n items most similar to item_id based on the similarity matrix
         :param item_id:
         :param sim_matrix:
         :param item_n:
@@ -197,7 +180,7 @@ class ItemCF:
 
     def get_top_n(self, item_similar, user_id, item_n, top_n):
         """
-        方法2中：给用户推荐top_n项目
+        Recommend top_n items
         :param item_similar:
         :param user_id:
         :param item_n:
@@ -225,14 +208,13 @@ class ItemCF:
 
     def calculate(self, user_id=1, item_n=20, top_n=10, sim_type=1):
         """
-        用方法2计算，用时很短
         :param user_id:
         :param item_n:
         :param top_n:
-        :param sim_type: type=1表示不考虑评分 type=2表示考虑评分
+        :param sim_type: type=1: without considering the score  type=2: consider the score
         :return:
         """
-        Matrix.pre_process(self.data, sim_type)  # 如果只用矩阵计算，最好放到__init__中
+        Matrix.pre_process(self.data, sim_type)
         item_similar = Matrix.load(sim_type)
         top_n_item = self.get_top_n(item_similar, user_id, item_n, top_n)
         return top_n_item
@@ -242,6 +224,6 @@ if __name__ == "__main__":
     start = time()
     file_path = './data/ml-latest-small/ratings.csv'
     data = pd.read_csv(file_path)
-    user_cf = ItemCF(data=data)
-    print(user_cf.calculate())
+    item_cf = ItemCF(data=data)
+    print(item_cf.calculate())
     print('total time is:', time() - start)

@@ -21,8 +21,8 @@ class SkipGram(nn.Module):
 
     def __init__(self, word_size, emb_dim):
         """
-        :param word_size: 有多少个词
-        :param emb_dim: 每个词用多少维来表示，一般来说：50～500
+        :param word_size: total word number
+        :param emb_dim: Feature dimensions of each word, generally 50～500
         """
         super(SkipGram, self).__init__()
         self.word_size = word_size
@@ -33,7 +33,9 @@ class SkipGram(nn.Module):
 
     def _init_emb(self):
         """
-        初始化embedding，u_embed为正态分布，v_embed值全为0
+        Initialization of embedding,
+        u_embed obeys normal distribution
+        v_embed value is 0
         :return:
         """
         init_range = 0.5 / self.emb_dim
@@ -42,11 +44,11 @@ class SkipGram(nn.Module):
 
     def forward(self, pos_u, pos_v, neg_v):
         """
-        向前传播，返回Loss，考虑负采样
-        :param pos_u: 中心单词的id，
-        :param pos_v: 邻居单词的id 积极样本
-        :param neg_v: 邻居单词的id 消极样本
-        :return:
+        Forward propagation and negative sampling is considered
+        :param pos_u: The id of the center word
+        :param pos_v: The id of the neighbor word，a positive sample
+        :param neg_v: The id of the neighbor word，a negative sample
+        :return: loss
         """
         emb_u = self.u_embed(pos_u)
         emb_v = self.v_embed(pos_v)
@@ -59,8 +61,8 @@ class SkipGram(nn.Module):
 
     def save_embedding(self, int_to_word):
         """
-        用于保存embedding
-        :param int_to_word: 把word_id转换为word
+        save word embedding
+        :param int_to_word: Convert word_id to word
         :return:
         """
         embed = self.u_embed.weight.data.numpy()
@@ -72,16 +74,16 @@ class SkipGram(nn.Module):
 
     def dispaly(self):
         """
-        用Tsne降维显示，中文乱码的话自行google
+        With Tsne dimensionless display
         :return:
         """
-        viz_words = 200  # 显示200个单词
+        viz_words = 200  # Display 200 words
         tsne = TSNE()
         embed = self.u_embed.weight.data.numpy()
         embed_tsne = tsne.fit_transform(embed[:viz_words, :])
         fig, ax = plt.subplots(figsize=(14, 14))
-        plt.xlabel(u'横坐标')
-        plt.ylabel(u'纵坐标')
+        plt.xlabel(u'x')
+        plt.ylabel(u'y')
         for idx in range(viz_words):
             plt.scatter(*embed_tsne[idx, :], color='steelblue')
             plt.annotate(int_to_vocab[idx],
@@ -94,14 +96,14 @@ class Word2Vec(object):
     def __init__(self, data, emb_dim=100, batch_size=16, window_size=5,
                  epochs=1, lr=0.025, min_count=5):
         """
-        初始化程序
-        :param data: 传入数据
-        :param emb_dim: 每个word的向量维度，google用的是300
+        initializer
+        :param data:
+        :param emb_dim: Feature dimensions of each word, generally 50～500. Google uses 300.
         :param batch_size:
         :param window_size:
         :param epochs:
-        :param lr: 学习率
-        :param min_count: 每个word的最小出现次数
+        :param lr: learining rate
+        :param min_count: Minimum count of occurrences per word
         """
         self.train_data = self._subsampling(data, min_count)
         self.emb_dim = emb_dim
@@ -115,23 +117,23 @@ class Word2Vec(object):
 
     def _subsampling(self, data, min_count):
         """
-        分词，映射，二次采样，返回data的数值形式
+        Participle, mapping, secondary sampling
         :param data:
         :param min_count:
-        :return:
+        :return: the numerical form of data
         """
-        new_data = re.sub(r'[^\u4e00-\u9fa5]', '', data)  # 过滤标点符号、换号符等
+        new_data = re.sub(r'[^\u4e00-\u9fa5]', '', data)  # Filtering punctuation, character changes, etc
         words = jieba.cut(new_data)
         word_list = [word for word in words]
         word_counts = Counter(word_list)
         trim_word = [word for word in word_list if
-                     word_counts[word] > min_count]  # 出现次数太低的不要
+                     word_counts[word] > min_count]  # throw the low-frequency word
         sorted_vocab = sorted(word_counts, key=word_counts.get, reverse=True)
-        # 常见单词转换数字 数字转单词的映射表
+        # Common words convert Numbers
         global int_to_vocab, vocab_to_int
         int_to_vocab = {i: word for i, word in enumerate(sorted_vocab)}
         vocab_to_int = {word: i for i, word in int_to_vocab.items()}
-        # 二次抽样
+        # secondary sampling
         thr = 1e-5
         total_count = len(trim_word)
         freqs = {word: count / total_count for word, count in
@@ -145,9 +147,9 @@ class Word2Vec(object):
 
     def _get_target(self, words, idx):
         """
-        从窗口中获取target
-        :param words: 单词表
-        :param idx: 当前索引值
+        Get the target from the window
+        :param words: words list
+        :param idx: Current index value
         :return:
         """
         R = np.random.randint(1, self.window_size + 1)
@@ -158,7 +160,7 @@ class Word2Vec(object):
 
     def _get_batches(self):
         """
-        提供batches
+        offer batches
         :yield: pos_u, pos_v, neg_v
         """
         n_batches = len(self.train_data) // self.batch_size
@@ -177,7 +179,7 @@ class Word2Vec(object):
 
     def train(self):
         """
-        训练数据，保存embedding，并显示部分单词
+        Training data, save the embedding, and show some words
         :return:
         """
         process_bar = tqdm(range(self.epochs))
@@ -202,8 +204,8 @@ class Word2Vec(object):
 
 
 if __name__ == "__main__":
-    corpus_dir = './data/corpus_xueqiu.txt'  # 语料库，每一行表示一篇文章
-    corpus_dir = './data/idf_test.txt'  # 语料库，每一行表示一篇文章
+    corpus_dir = './data/corpus_xueqiu.txt'  # Corpus, each line represents an article
+    corpus_dir = './data/idf_test.txt'  # test article, one line
     text = open(corpus_dir, 'rb').read().decode('utf-8')
     wv = Word2Vec(text, epochs=1)
     wv.train()

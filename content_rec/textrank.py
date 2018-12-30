@@ -10,13 +10,13 @@ from operator import itemgetter
 
 class TextRank(object):
     """
-    基于TextRank提取关键词
+    Extract keywords based on TextRank
     """
 
-    # 分割句子
+    # split sentence
     sentence_delimiters = ['?', '!', '；', '？', '！', '。', '；', '……', '…', '\n']
 
-    # 允许的词性
+    # allow Part-of-Speech（POS） tagging
     allow_speech_tags = ['an', 'i', 'j', 'l', 'n', 'nr', 'nrfg', 'ns', 'nt',
                          'nz', 't', 'v', 'vd', 'vn', 'eng']
 
@@ -26,7 +26,7 @@ class TextRank(object):
 
     def _pro_stop_words(self):
         """
-        加入停用词
+        import stop words
         :return:
         """
         stop_dir = os.path.join('./data/stop_words')
@@ -36,7 +36,7 @@ class TextRank(object):
 
     def _get_sentence(self, text):
         """
-        基于文章得到句子
+        get sentence from text
         :param text:
         :return:
         """
@@ -50,7 +50,7 @@ class TextRank(object):
 
     def _get_segment(self, sentence):
         """
-        分词，过滤不要的词性和停用词
+        Separate words, filter out unexpected POS and stop words
         :param sentence:
         :return:
         """
@@ -63,15 +63,15 @@ class TextRank(object):
             res.append(w)
         return res
 
-    def combine(self, word_list, window=2):
+    def combine(self, word_list, window_size=2):
         """
-        构造在window下的词语组合，用来构建词语之间的关系
-        :param word_list: 单词列表
-        :param window: 窗口大小
-        :return: 返回两个词语
+        Construct word combinations under Windows to build relationships between words
+        :param word_list:
+        :param window_size:
+        :return:
         """
-        if window < 2: window = 2
-        for x in range(1, window):
+        if window_size < 2: window_size = 2
+        for x in range(1, window_size):
             if x >= len(word_list):
                 break
             word_list2 = word_list[x:]
@@ -81,15 +81,15 @@ class TextRank(object):
 
     def get_text_rank(self, text, window=2, topk=10):
         """
-        实现textrank算法，并返回关键词
-        :param text: 文章
-        :param window: 滑动窗口
-        :param topk: topk个词
-        :param pagerank_config: pagerank的阻尼系数 一般设置为0.85
-        :return: topk个关键词
+        Implement the textrank algorithm and return the keyword
+        :param text:
+        :param window: Sliding window size
+        :param topk: topk keywords
+        :param pagerank_config: Damping coefficient of pagerank. general setting is 0.85
+        :return:
         """
         sentences = self._get_sentence(text)
-        res = []  # 二维列表
+        res = []  # 2 d list
         for sen in sentences:
             res.append(self._get_segment(sen))
         word_index = {}
@@ -102,7 +102,7 @@ class TextRank(object):
                     index_word[words_number] = word
                     words_number += 1
 
-        graph = np.zeros((words_number, words_number))  # 矩阵
+        graph = np.zeros((words_number, words_number))  # matrix
         for word_list in res:
             for w1, w2 in self.combine(word_list, window):
                 index1 = word_index[w1]

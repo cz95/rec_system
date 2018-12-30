@@ -11,17 +11,17 @@ from collections import Counter
 
 
 class Corpus(object):
-    item_dict_path = './data/lfm/lfm_items.dict'
+    item_dict_path = './data/rsvd/rsvd_items.dict'
 
     @classmethod
     def pre_process(cls, data):
         """
-        预处理一下，获得每个用户的正负样本并存储
+        get positive and negative samples of each user and store
         :param data:
         :return:
         """
-        if not os.path.exists('./data/lfm/'):
-            os.makedirs('./data/lfm/')
+        if not os.path.exists('./data/rsvd/'):
+            os.makedirs('./data/rsvd/')
         if os.path.exists(cls.item_dict_path):
             return
         cls.data = data
@@ -36,10 +36,10 @@ class Corpus(object):
     @classmethod
     def _get_pos_neg_item(cls, user_id):
         """
-        定义感兴趣的和不感兴趣的项目
-        感兴趣为用户评分过的
-        不感兴趣为用户没评分
-        负样本/正样本 = 10（负样本选取很热门却没有行为的项目）
+        Define interesting and uninteresting items
+        Interesting items is rated
+        Uninteresting items in not rated
+        Negative sample/positive sample = 10 (negative sample selects hot items with no behaviors)
         :param user_id:
         :return:
         """
@@ -71,8 +71,8 @@ class Corpus(object):
         return item_dict
 
 
-class LFM(object):
-    lfm_dir = './data/lfm/lfm.neighbor_rec'
+class RSVD(object):
+    rsvd_dir = './data/rsvd/rsvd.model'
 
     def __init__(self, path):
         self.file_path = path
@@ -88,7 +88,7 @@ class LFM(object):
         self.user_list = self.data['userId'].unique()
         self.item_list = self.data['movieId'].unique()
         self.item_dict = Corpus.load()
-        if not os.path.exists(self.lfm_dir):
+        if not os.path.exists(self.rsvd_dir):
             array_p = np.random.randn(len(self.user_list), self.feature_n)
             array_q = np.random.randn(len(self.item_list), self.feature_n)
             self.p = pd.DataFrame(array_p, columns=range(0, self.feature_n),
@@ -109,7 +109,7 @@ class LFM(object):
 
     def _optimize(self, user_id, item_id, e):
         """
-        SGD，误差为sse，RSVD
+        SGD，Error is sse
         e.g: E = 1/2 * (y - predict)^2, predict = matrix_p * matrix_q
              derivation(E, p) = -matrix_q*(y - predict)
              derivation(E, q) = -matrix_p*(y - predict)
@@ -150,7 +150,7 @@ class LFM(object):
                 rmse += e ** 2
                 count += 1
         rmse = np.sqrt(rmse / count)
-        print('最终, RMSE = {}'.format(rmse))
+        print('The final, RMSE = {}'.format(rmse))
         self.save()
 
     def predict(self, user_id, top_n=10):
@@ -165,14 +165,14 @@ class LFM(object):
         return candi[:top_n]
 
     def save(self):
-        if not os.path.exists('./data/lfm/'):
-            os.makedirs('./data/lfm/')
-        f = open(self.lfm_dir, 'wb')
+        if not os.path.exists('./data/rsvd/'):
+            os.makedirs('./data/rsvd/')
+        f = open(self.rsvd_dir, 'wb')
         pickle.dump((self.p, self.q), f)
         f.close()
 
     def load(self):
-        f = open(self.lfm_dir, 'rb')
+        f = open(self.rsvd_dir, 'rb')
         self.p, self.q = pickle.load(f)
         f.close()
 
@@ -180,6 +180,6 @@ class LFM(object):
 if __name__ == '__main__':
     file_path = './data/ml-latest-small/ratings.csv'
     start = time()
-    movies = LFM(file_path).predict(user_id=1)
+    movies = RSVD(file_path).predict(user_id=1)
     print(movies)
-    print('用时：', time() - start)
+    print('Use time: ', time() - start)

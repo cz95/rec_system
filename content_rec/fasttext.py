@@ -12,11 +12,11 @@ from torch.autograd import Variable
 from torch import nn
 from sklearn.model_selection import train_test_split
 
+"""
+Dataset: AG's News Topic Classification Dataset（Version 3, Updated 09/09/2015）
+Uncompleted: Hierarchical softmax
+"""
 
-"""
-使用数据集：AG's News Topic Classification Dataset（Version 3, Updated 09/09/2015）
-未实现Hierarchical softmax
-"""
 
 class FastText(nn.Module):
     def __init__(self, word_size, emb_dim=300, n_classes=4):
@@ -32,8 +32,14 @@ class FastText(nn.Module):
         )
 
     def forward(self, x, x_len):
-        embed = self.bon_embed(x)  # 增加了一个维度emb_dim
-        embed = torch.sum(embed, 1).squeeze(1)  # 去除第二维度
+        """
+        Calculate the loss of forward propagation
+        :param x:
+        :param x_len:
+        :return:
+        """
+        embed = self.bon_embed(x)  # Add a dimension: emb_dim
+        embed = torch.sum(embed, 1).squeeze(1)  # Remove the second dimension
         batch_size = embed.size(0)
         x_len = x_len.float().unsqueeze(1)
         x_len = x_len.expand(batch_size, self.emb_dim)
@@ -42,7 +48,12 @@ class FastText(nn.Module):
         out = self.fc(embed)
         return F.log_softmax(out, dim=1)
 
-    def save_embed(self, path, int_to_gram):
+    def save_embed(self, int_to_gram):
+        """
+        save the word embedding
+        :param int_to_gram: a dictionary
+        :return:
+        """
         embed = self.bon_embed.weight.data.numpy()
         with open(self.embedding_dir, 'w', encoding='utf-8') as f:
             for id, w in int_to_gram.items():
@@ -50,15 +61,14 @@ class FastText(nn.Module):
                 e = ' '.join(map(lambda x: str(x), e))
                 f.write('%s %s\n' % (str(w), e))
 
+
 class AGData(object):
     def __init__(self, data_path, n_classes):
         self.data_path = data_path
         self.n_classes = n_classes
         self.int_to_gram = dict()
         self.gram_to_int = dict()
-        self.valid_size = 0.1
         self.train_pickle = os.path.join(self.data_path, 'train_pickle.arr')
-        self.valid_pickle = os.path.join(self.data_path, 'valid_pickle.arr')
         self.test_pickle = os.path.join(self.data_path, 'test_pickle.arr')
         if not os.path.exists(self.train_pickle):
             self.nlp = spacy.load('en_core_web_lg',
@@ -68,11 +78,16 @@ class AGData(object):
             self.gram_to_int['PAD'] = 0
             self.int_to_gram[1] = 'UNK'
             self.gram_to_int['UNK'] = 1
-            self.train_data_arr, self.valid_data_arr, self.test_data_arr = self._load_csv(
-                data_path)
+            self.train_data_arr, self.test_data_arr = self._load_csv(data_path)
             self._save()
 
     def _add_ngram(self, bow, n=3):
+        """
+        add word-n_gram in word bag
+        :param bow:
+        :param n:
+        :return:
+        """
         bow_ngram = bow
         for word in bow:
             words = '<' + word + '>'
@@ -82,6 +97,11 @@ class AGData(object):
         return bow_ngram
 
     def _get_process(self, content):
+        """
+        preprocessing include handling symbols、vectoring text
+        :param content:
+        :return:
+        """
         content = content.replace('\\', ' ')
         content = re.sub("[+.!/_,$%^*()+\"']", '', content)
         content = self.nlp(content)
@@ -100,6 +120,11 @@ class AGData(object):
         return int_bow_ngram
 
     def _load_csv(self, data_path):
+        """
+        load csv
+        :param data_path:
+        :return:
+        """
         columns = ['class', 'title', 'dec']
         train_path = os.path.join(data_path, 'train.csv')
         test_path = os.path.join(data_path, 'test.csv')
@@ -116,16 +141,16 @@ class AGData(object):
         train_data = train_data.drop(['dec'], axis=1)
         test_data = test_data.drop(['dec'], axis=1)
 
-        train_data, valid_data = train_test_split(train_data,
-                                                  test_size=self.valid_size)
-
         train_data_arr = train_data.values
-        valid_data_arr = valid_data.values
         test_data_arr = test_data.values
 
-        return train_data_arr, valid_data_arr, test_data_arr
+        return train_data_arr, test_data_arr
 
     def load(self):
+        """
+        load model
+        :return:
+        """
         with open(self.train_pickle, 'rb') as f:
             train_data_arr = pickle.load(f)
         with open(self.test_pickle, 'rb') as f:
@@ -137,6 +162,10 @@ class AGData(object):
         return train_data_arr, test_data_arr, int_to_gram, gram_to_int
 
     def _save(self):
+        """
+        save model
+        :return:
+        """
         with open(self.train_pickle, 'wb') as f:
             pickle.dump(self.train_data_arr, f)
         with open(self.test_pickle, 'wb') as f:
@@ -147,9 +176,9 @@ class AGData(object):
             pickle.dump(self.gram_to_int, f)
 
 
-
 class Classify(object):
-    def __init__(self, data_path, epochs=1, lr=0.1, n_classes=4, batch_size=32, max_len=800):
+    def __init__(self, data_path, epochs=1, lr=0.1, n_classes=4, batch_size=32,
+                 max_len=800):
         self.data = AGData(data_path, n_classes)
         self.embed_path = os.path.join(data_path, 'embed.dict')
         self.model_save_path = os.path.join(data_path, 'fasttext.pkl')
@@ -161,7 +190,7 @@ class Classify(object):
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr,
                                     amsgrad=True)
 
-    def _get_batches(self, data, batch_size=32, shuffle=True, num_workers=4):
+    def _get_batches(self, data):
         n_batches = len(data) // self.batch_size
         data_trim = data[: n_batches * self.batch_size]  # 防止出现不够用
         for idx in range(0, len(data_trim), self.batch_size):
@@ -169,7 +198,7 @@ class Classify(object):
             x, y, x_len = [], [], []
             for cls, data in batch:
                 z = len(data)
-                y.append(cls-1)
+                y.append(cls - 1)
                 if z < self.max_len:
                     data = data + [self.gram_to_int['PAD']] * (self.max_len - z)
                 x.append(data)
@@ -189,9 +218,11 @@ class Classify(object):
                 loss = F.nll_loss(output, y)
                 loss.backward()
                 self.optimizer.step()
-                pre = output.max(1,keepdim=True)[1]
+                pre = output.max(1, keepdim=True)[1]
                 cor = pre.eq(y.view_as(pre)).sum().item()
-                print('Train Epoch {}, acc={},loss={}'.format(i, cor/len(x_len), loss))
+                print(
+                    'Train Epoch {}, acc={},loss={}'.format(i, cor / len(x_len),
+                                                            loss))
                 print(loss)
         self._save_model(self.model)
 
@@ -202,7 +233,8 @@ class Classify(object):
         torch.save(model_dict, self.model_save_path)
         self.model.save_embed(self.embed_path, self.int_to_gram)
 
+
 if __name__ == '__main__':
-    data_path = './data/ag_news/'  # 包括train.csv test.csv
+    data_path = './data/ag_news/'  # folder need include train.csv and test.csv
     cla = Classify(data_path)
     cla.train()

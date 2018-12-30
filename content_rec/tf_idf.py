@@ -15,12 +15,12 @@ class IDF(object):
     @classmethod
     def _process(cls, corpus_dir):
         """
-        计算idf的总负责
+        All the steps
         :param corpus_dir:
         :return:
         """
-        cls.num = 0  # 文章个数
-        cls.article = {}  # 文章 存储该文章下所有分词的集合
+        cls.num = 0  # the article number
+        cls.article = {}  # stores the collection of all participles under the article
         cls.idf = {}  # idf
         cls.word_set = set()
         cls._calculate_idf(corpus_dir)
@@ -29,7 +29,7 @@ class IDF(object):
     @classmethod
     def _calculate_idf(cls, corpus_dir):
         """
-        计算idf
+        calculate idf
         :param corpus_dir:
         :return:
         """
@@ -49,7 +49,7 @@ class IDF(object):
     @classmethod
     def save(cls):
         """
-        保存idf模型
+        save idf model
         :return:
         """
         with open(cls.idf_dir, 'wb') as f:
@@ -58,8 +58,8 @@ class IDF(object):
     @classmethod
     def load(cls, corpus_dir):
         """
-        对外接口，调用加载idf模型
-        :param corpus_dir: 需要学习的语料库地址
+        load idf model
+        :param corpus_dir: Address of corpus to be learned
         :return:
         """
         if not os.path.exists('./data/'):
@@ -74,10 +74,12 @@ class IDF(object):
 
 class TF_IDF(object):
     """
-    tf_idf算法实现，需要停用词和语料库，语料库每一行为一篇文章。
+    Tf_idf algorithm implementation
+    need stop words and corpus
+    corpus every behavior of an article.
     """
 
-    # 允许的词性
+    # allow Part-of-Speech（POS） tagging
     allow_speech_tags = ['an', 'i', 'j', 'l', 'n', 'nr', 'nrfg', 'ns', 'nt',
                          'nz', 't', 'v', 'vd', 'vn', 'eng']
 
@@ -85,11 +87,11 @@ class TF_IDF(object):
         self.stop_words = set()
         self._pro_stop_words()
         self.idf = IDF.load(corpus_dir)
-        self.new_idf = np.mean(list(self.idf.values()))  # 对与新词 我们用均值
+        self.new_idf = np.mean(list(self.idf.values()))  # For new words, we use the mean
 
     def _pro_stop_words(self):
         """
-        加入停用词
+        add stop words
         :return:
         """
         stop_dir = os.path.join('./data/stop_words')
@@ -99,24 +101,24 @@ class TF_IDF(object):
 
     def get_tf_idf(self, data, top_k):
         """
-        计算tf_idf并获取topk关键词
+        Calculate tf_idf and get topk keyword
         :param data:
         :param top_k:
         :return:
         """
         words = pseg.cut(data)
-        # 过滤不要的词性
+        # Filter out unexpected POS
         words_filter = [w for w in words if w.flag in self.allow_speech_tags]
         tf = {}
         tf_idf = {}
         word_num = 0
-        # 过滤停用词并计算tf
+        # Filter stop words and calculate tf
         for w, flag in words_filter:
             if len(w.strip()) < 2 or w.lower() in self.stop_words:
                 continue
             word_num += 1
             tf[w] = tf.get(w, 0.0) + 1.0
-        # 计算tf-idf
+        # calculate tf-idf
         for key in tf.keys():
             idf = self.new_idf
             if key in self.idf.keys():
@@ -127,8 +129,8 @@ class TF_IDF(object):
 
 
 if __name__ == '__main__':
-    corpus_dir = './data/corpus_xueqiu.txt'  # 语料库，每一行表示一篇文章
-    idf_test = './data/idf_test.txt'  # 测试文章
+    corpus_dir = './data/corpus_xueqiu.txt'  # Corpus, each line represents an article
+    idf_test = './data/idf_test.txt'  # test article, one line
     text = open(idf_test, 'rb').read().decode('utf-8')
     a = TF_IDF(corpus_dir)
     print(a.get_tf_idf(text, 10))

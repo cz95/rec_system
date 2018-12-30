@@ -28,7 +28,8 @@ class Indicators():
 
     def _set_top(self, user_n, item_n):
         """
-        设置topn值，找出user_n个最相似的用户，推荐item_n个电影
+        Set top-n value, find the most similar users with user_n,
+        recommend item_n movies
         :param user_n:
         :param item_n:
         :return:
@@ -38,7 +39,7 @@ class Indicators():
 
     def _get_recommend(self, user):
         """
-        针对用户user拿到推荐item
+        Get the recommended item for the user
         :param user:
         :return:
         """
@@ -47,13 +48,14 @@ class Indicators():
 
     def precision(self, user_list):
         """
-        计算精确率, 推荐正确item集合 / 所有推荐item集合
-        :param user_list: 随机生成的user集合
+        Calculate the precision rate
+        (recommend the correct item) / (all recommended item sets)
+        :param user_list:
         :return:
         """
         hit = 0
         all_recom = 0
-        print('计算精确率：')
+        print('Calculate precision: ')
         for user in tqdm(user_list):
             recom_data = self._get_recommend(user)
             recom_item = set([data[0] for data in recom_data])
@@ -62,18 +64,19 @@ class Indicators():
             overlap = recom_item & user_item
             hit += len(overlap)
             all_recom += len(recom_item)
-        print('\n精确率为：', hit / (all_recom * 1.0))
+        print('\nprecision is: ', hit / (all_recom * 1.0))
         return hit / (all_recom * 1.0)
 
     def recall(self, user_list):
         """
-        计算召回率，推荐正确item集合 / 用户在测试集上喜欢的item集合
-        :param user_list: 随机生成的user集合
+        Calculate the recall rate
+        (recommend the correct item) / (The collection of items that the user likes on the test set)
+        :param user_list:
         :return:
         """
         hit = 0
         like_item = 0
-        print('\n计算召回率：')
+        print('\nCalculate recall: ')
         for user in tqdm(user_list):
             recom_data = self._get_recommend(user)
             recom_item = set([data[0] for data in recom_data])
@@ -82,47 +85,47 @@ class Indicators():
             overlap = recom_item & user_item
             hit += len(overlap)
             like_item += len(user_item)
-        print('\n召回率为：', hit / (like_item * 1.0))
+        print('\nrecall is: ', hit / (like_item * 1.0))
         return hit / (like_item * 1.0)
 
     def coverage(self, user_list):
         """
-        计算覆盖率，最终推荐的item / 所有item
+        Calculated coverage, (Final recommended items)/(all items)
         :param user_list:
         :return:
         """
         all_recom_set = set()
         all_item = set(self.train['movieId'].values)
-        print('\n计算覆盖率：')
+        print('\nCalculated coverage: ')
         for user in tqdm(user_list):
             recom_data = self._get_recommend(user)
             recom_item = set([data[0] for data in recom_data])
             all_recom_set.update(recom_item)
-        print('\n覆盖率为：', len(all_recom_set) / (len(all_item) * 1.0))
+        print('\nCoverage is: ', len(all_recom_set) / (len(all_item) * 1.0))
         return len(all_recom_set) / (len(all_item) * 1.0)
 
     def popularity(self, user_list):
         """
-        计算新颖性，推荐物品越热门，新颖性越低
+        Calculate popularity. The hotter the item, the less popularity
         :param user_list:
         :return:
         """
         item_popular = Counter(self.train['movieId'].values)
         ret = 0
         n = 0
-        print('\n计算新颖度：')
+        print('\nCalculate popularity: ')
         for user in tqdm(user_list):
             recom_data = self._get_recommend(user)
             for rec in set([data[0] for data in recom_data]):
                 ret += math.log(1 + item_popular.get(rec))
                 n += 1
         ret /= n * 1.0
-        print('\n新颖度为：', ret)
+        print('\npopularity: ', ret)
         return ret
 
     def calculate(self, seed=1):
         """
-        可以用于计算单个指标
+        Calculate a single metric
         :param seed:
         :return:
         """
@@ -137,8 +140,8 @@ class Indicators():
 
     def calculate_total(self, calcu_user_n=20, user_n=20, item_n=10, seed=1):
         """
-        计算所有指标
-        :param calcu_user_n: 计算用户个数
+        Calculate all the indicators
+        :param calcu_user_n: the number of users
         :param user_n:
         :param item_n:
         :param seed:
@@ -149,15 +152,15 @@ class Indicators():
         test_user_list = list(set(self.test['userId'].unique()))
         user_list = [test_user_list[random.randint(0, len(test_user_list)) - 1]
                      for i in range(calcu_user_n)]
-        hit = 0  # 击中长度
-        all_recom = 0  # 所有用户推荐个数和，用于计算精确率
-        like_item = 0  # 用户在测试集中喜欢的项目长度，用于计算召回率
+        hit = 0  # Hit score
+        all_recom = 0  # num of all recommendations, calculate the accuracy rate
+        like_item = 0  # num of the item the user likes in the test set, calculate the recall rate
         all_recom_set = set()
         all_item = set(self.train['movieId'].unique())
         item_popular = Counter(self.train['movieId'].values)
         ret = 0
         n = 0
-        print('\n计算所有测评指标中...')
+        print('\nCalculate all evaluation indicators...')
         for user in tqdm(user_list):
             recom_data = self._get_recommend(user, )
             recom_item = set([data[0] for data in recom_data])
@@ -171,11 +174,11 @@ class Indicators():
             for rec in set([data[0] for data in recom_data]):
                 ret += math.log(1 + item_popular.get(rec))
                 n += 1
-        print('\n计算完毕。')
-        print('精确率为：', hit / (all_recom * 1.0))
-        print('召回率为：', hit / (like_item * 1.0))
-        print('覆盖率为：', len(all_recom_set) / (len(all_item) * 1.0))
-        print('新颖度为：', (ret / n * 1.0))
+        print('\nCalculate over')
+        print('Precision is: ', hit / (all_recom * 1.0))
+        print('Recall is: ', hit / (like_item * 1.0))
+        print('Coverage is: ', len(all_recom_set) / (len(all_item) * 1.0))
+        print('Popularity is:', (ret / n * 1.0))
 
 
 if __name__ == '__main__':
