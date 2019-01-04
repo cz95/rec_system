@@ -10,7 +10,7 @@ from time import time
 from collections import Counter
 
 
-class Corpus(object):
+class Sample(object):
     item_dict_path = './data/rsvd/rsvd_items.dict'
 
     @classmethod
@@ -84,10 +84,10 @@ class RSVD(object):
 
     def _init_model(self):
         self.data = pd.read_csv(self.file_path)
-        Corpus.pre_process(self.data)
+        Sample.pre_process(self.data)
         self.user_list = self.data['userId'].unique()
         self.item_list = self.data['movieId'].unique()
-        self.item_dict = Corpus.load()
+        self.item_dict = Sample.load()
         if not os.path.exists(self.rsvd_dir):
             array_p = np.random.randn(len(self.user_list), self.feature_n)
             array_q = np.random.randn(len(self.item_list), self.feature_n)

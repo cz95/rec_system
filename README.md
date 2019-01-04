@@ -6,9 +6,9 @@ This chapter mainly implements the basic algorithms required by content-based re
 
 These algorithms can extract structured data based on user behavior and then select labels
 ### 1.1 Structured data
-1. Keyword extraction —— TF-IDF(√)/TextRank(√)
+1. Keyword extraction —— TF-IDF(√) and TextRank(√)
 2. Content classification —— FastText(√)
-3. Entity recognition —— BiLSTM
+3. Entity recognition —— BiLSTM-CRF
 4. Topic model —— LDA
 5. Word Embedding —— Word2Vec(√)
 ### 1.2 Select labels
@@ -30,6 +30,9 @@ The  Memory-Based CF is mainly introduced.
 ## 3 Matrix-decomposition recommendation (matrix_rec)
 This chapter mainly implements the basic algorithm of recommendation system based on matrix decomposition.
 
-The most commonly matrix decomposition is SVD.
+The most commonly matrix decomposition is RSVD.
+
+Many company use ALS and BPR to optimize matrix decomposition.
 
 1. Regularized singular value decomposition —— RSVD(√)
+2. Bayesian personalized ranking —— BPR(√)
