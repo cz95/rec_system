@@ -1,5 +1,5 @@
 # Recommend System
-Recommend System contain mainstream models and are updated rregularly.
+Recommend System contain mainstream models and are updated irregularly.
 
 ## 1 Content-based recommendation (content_rec)
 This chapter mainly implements the basic algorithms required by content-based recommendation system.
