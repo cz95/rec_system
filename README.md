@@ -24,15 +24,23 @@ Collaborative-filtering includes Memory-Based CF and Model-Based CF.
 
 The  Memory-Based CF is mainly introduced.
 
-1. User-based collaborative filtering —— usercf(√)
-2. Item-based collaborative filtering —— itemcf(√)
+1. User-based collaborative filtering —— Usercf(√)
+2. Item-based collaborative filtering —— Itemcf(√)
 
 ## 3 Matrix-decomposition recommendation (matrix_rec)
 This chapter mainly implements the basic algorithm of recommendation system based on matrix decomposition.
 
 The most commonly matrix decomposition is RSVD.
 
-Many company use ALS and BPR to optimize matrix decomposition.
+Many company also use ALS and BPR to optimize matrix decomposition.
 
 1. Regularized singular value decomposition —— RSVD(√)
 2. Bayesian personalized ranking —— BPR(√)
+
+## 4 Model-integration recommendation (integration_rec)
+ This chapter mainly implements the basic algorithm of recommendation system based on model integration.
+ 
+ The typical model scheme is GBDT+LR.
+ 
+ 1. Gradient Boost Decision Tree and Logistic Regression —— GDBT+LR(√)
+ 
