@@ -1,46 +1,49 @@
-# Recommend System
-Recommend System contain mainstream models and are updated irregularly.
+#推荐系统
+推荐系统包含主流机型，不定期更新。
 
-## 1 Content-based recommendation (content_rec)
-This chapter mainly implements the basic algorithms required by content-based recommendation system.
+## 1 基于内容的推荐(content_rec)
+本章主要实现基于内容的推荐系统所需要的基本算法。
 
-These algorithms can extract structured data based on user behavior and then select labels
-### 1.1 Structured data
-1. Keyword extraction —— TF-IDF(√) and TextRank(√)
-2. Content classification —— FastText(√)
-3. Entity recognition —— BiLSTM-CRF
-4. Topic model —— LDA
-5. Word Embedding —— Word2Vec(√)
-### 1.2 Select labels
-Filter labels extracted from structured data
-1. Chi-square
-2. Comentropy
+这些算法可以根据用户行为提取结构化数据，然后选择标签
+### 1.1 结构化数据
+1. 关键字提取——TF-IDF(√)和TextRank(√)
+2. 内容分类——FastText(√)
+3. 实体识别——BiLSTM-CRF
+4. 主题模型——LDA
+5. 单词嵌入——Word2Vec(√)
+### 1.2选择标签
+从结构化数据中提取的过滤器标签
+1. 卡方
+2. 信息熵
 
 
-## 2 Neighbor-based recommendation (neighbor_rec)
-This chapter mainly implements the basic algorithms of recommendation system based on collaborative filtering. 
+## 2基于邻居的推荐(neighbor_rec)
+本章主要实现了基于协同过滤的推荐系统的基本算法。
 
-Collaborative-filtering includes Memory-Based CF and Model-Based CF.
+协同过滤包括基于内存的CF和基于模型的CF。
 
-The  Memory-Based CF is mainly introduced.
+主要介绍了基于内存的CF。
 
-1. User-based collaborative filtering —— Usercf(√)
-2. Item-based collaborative filtering —— Itemcf(√)
+1. 基于用户的协同过滤——Usercf(√)
+2. 基于项目的协同过滤——Itemcf(√)
 
-## 3 Matrix-decomposition recommendation (matrix_rec)
-This chapter mainly implements the basic algorithm of recommendation system based on matrix decomposition.
+## 3 矩阵分解(matrix_rec)
+本章主要实现了基于矩阵分解的推荐系统的基本算法。
 
-The most commonly matrix decomposition is RSVD.
+最常见的矩阵分解是RSVD。
 
-Many company also use ALS and BPR to optimize matrix decomposition.
+许多公司也使用ALS和BPR来优化矩阵分解。
 
-1. Regularized singular value decomposition —— RSVD(√)
-2. Bayesian personalized ranking —— BPR(√)
+1. 正则奇异值分解——RSVD(√)
+2. 贝叶斯个性化排名——BPR(√)
 
-## 4 Model-integration recommendation (integration_rec)
- This chapter mainly implements the basic algorithm of recommendation system based on model integration.
- 
- The typical model scheme is GBDT+LR.
- 
- 1. Gradient Boost Decision Tree and Logistic Regression —— GDBT+LR(√)
- 
+## 4 模型融合(integration_rec)
+本章主要实现了基于模型集成的推荐系统的基本算法。
+
+典型的模型方案为GBDT+LR。
+
+1. 梯度Boost决策树与Logistic回归——GDBT+LR(√)
+2. 因子分解机——FM
+3. Wide & Deep 
+
+## 5 多臂赌博机(mab_rec)

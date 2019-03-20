@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import jieba.analyse
 
-file_name = './data/idf_test.txt'
-topK = 10
+file_name = '/Users/chenze/Downloads/tocz.txt'
+topK = 20
 content = open(file_name, 'rb').read()
 jieba.analyse.set_stop_words('./data/stop_words')
 allow_speech_tags = ['an', 'i', 'j', 'l', 'n', 'nr', 'nrfg', 'ns', 'nt',
